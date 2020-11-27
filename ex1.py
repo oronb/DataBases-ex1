@@ -252,6 +252,20 @@ def get_table_name(string):
         return Tables.ORDERS
 
 
+def check_dist_in_location(location_of_select, location_of_distinct, location_after_from):
+    return location_of_select < location_of_distinct < location_after_from
+
+
+def check_distinct(string, location_of_select, location_of_distinct, location_after_from):
+    str_between_select_and_distinct = string[location_after_SELECT:location_of_DISTINCT]
+    print("STR between select and distinct:--", str_between_select_and_distinct,"--")
+    location_exists = location_of_DISTINCT != -1
+    print("location exists:", location_exists)
+    dist_in_location = check_dist_in_location(location_of_select, location_of_distinct, location_after_from)
+    print("dist in location:", dist_in_location)
+    only_spaces_between_select_and_distinct = str_contain_only_spaces(str_between_select_and_distinct)
+    print("only spaces between select and distinct:", only_spaces_between_select_and_distinct)
+    return location_exists and dist_in_location and only_spaces_between_select_and_distinct
 # query = input("Enter a query: ")
 # print(query)
 
@@ -263,7 +277,7 @@ def get_table_name(string):
 # query = "SELECT something  FROM somewhere  WHERE  (y>x )  OR ( (x=y ) ) "  # VALID
 # query = "SELECT something  FROM somewhere  WHERE  (y<=x   OR ( (x>y ) ) "  # INVALID
 # query = "SELECT something  FROM somewhere  WHERE  ( (y>x)   OR ( (x<y ) ) )  "  # VALID
-query = "SELECT Customers.Name  FROM Customers  WHERE  ( (Customers.Age>5)   OR ( ('Mike'<=Customers.Name) ));"  # INVALID
+query = "SELECT DISTINCT Customers.Name  FROM Customers  WHERE  ( (Customers.Age>5)   OR ( ('Mike'<=Customers.Name) ));"  # INVALID
 # query = "SELECT something  FROM somewhere  WHERE  ( (x>>y AND y==x) OR ((y><x AND z>y )) ) "  # VALID
 # query = "SELECT something  FROM somewhere  WHERE  ( (x>y AND y<=x) OR ((y>=x AND z>y )) ) "  # VALID
 # query = "SELECT something  FROM somewhere  WHERE  ( (x=y AND y<x) OR ((y>x AND z<=x )) "  # INVALID
@@ -287,25 +301,14 @@ location_after_FROM = location_of_FROM + 4
 location_of_WHERE = query.find("WHERE")
 location_after_WHERE = location_of_WHERE + 5
 
-string_after_select = query[location_after_SELECT:location_of_FROM]
-string_after_from = query[location_after_FROM:location_of_WHERE]
-string_after_where = query[location_after_WHERE:]
-
-
-def check_dist_in_location(location_of_select, location_of_distinct, location_after_from):
-    return location_of_select < location_of_distinct < location_after_from
-
-
-def check_distinct(string, location_of_select, location_of_distinct, location_after_from):
-    str_between_select_and_distinct = string[location_after_SELECT:location_of_DISTINCT]
-    location_exists = location_of_DISTINCT != -1
-    dist_in_location = check_dist_in_location(location_of_select, location_of_distinct, location_after_from)
-    only_spaces_between_select_and_distinct = str_contain_only_spaces(str_between_select_and_distinct);
-    return location_exists and dist_in_location and only_spaces_between_select_and_distinct
-
 
 if check_distinct(query, location_of_SELECT, location_of_DISTINCT, location_of_FROM):
     location_after_SELECT = location_of_DISTINCT + 8
+    print(location_after_SELECT)
+
+string_after_select = query[location_after_SELECT:location_of_FROM]
+string_after_from = query[location_after_FROM:location_of_WHERE]
+string_after_where = query[location_after_WHERE:]
 
 if check_tables(string_after_from):
     table_name = get_table_name(string_after_from)
