@@ -31,7 +31,6 @@ def check_columns(string, name_of_table):
             return False
         else:
             return True
-
     comma_ind = string.find(",")
     if comma_ind < 0:
         return check_valid_column_from_table(string, name_of_table)
@@ -42,24 +41,6 @@ def check_columns(string, name_of_table):
         if not valid_left_part:
             return False
         return check_columns(right_string, name_of_table)
-
-
-def check_if_col_in_customers_col(col):
-    return col == NAME_COL_NAME or col == AGE_COL_NAME
-
-
-def check_if_col_in_orders_col(col):
-    return col == CUSTOMER_NAME_COL_NAME or col == PRODUCT_COL_NAME or col == PRICE_COL_NAME
-
-
-def get_table_from_attribute(string):
-    string_after_split = string.split(sep=".", maxsplit=2)
-    return string_after_split[0]
-
-
-def get_col_from_attribute(string):
-    string_after_split = string.split(sep=".", maxsplit=2)
-    return string_after_split[1]
 
 
 def check_valid_column_from_table(string, name_of_table):
@@ -79,6 +60,24 @@ def check_valid_column_from_table(string, name_of_table):
     return False
 
 
+def get_table_from_attribute(string):
+    string_after_split = string.split(sep=".", maxsplit=2)
+    return string_after_split[0]
+
+
+def check_if_col_in_customers_col(col):
+    return col == NAME_COL_NAME or col == AGE_COL_NAME
+
+
+def check_if_col_in_orders_col(col):
+    return col == CUSTOMER_NAME_COL_NAME or col == PRODUCT_COL_NAME or col == PRICE_COL_NAME
+
+
+def get_col_from_attribute(string):
+    string_after_split = string.split(sep=".", maxsplit=2)
+    return string_after_split[1]
+
+
 def check_tables(string):
     comma_ind = string.find(",")
     if comma_ind < 0:
@@ -93,7 +92,6 @@ def check_tables(string):
 
 
 def check_valid_table(string):
-    # perform all kinds of checks
     string = string.replace(" ", "")
     if string == CUSTOMERS_TABLE_NAME or string == ORDERS_TABLE_NAME:
         return True
@@ -136,7 +134,6 @@ def check_simple_cond(string):
         return False
     string_left_of_rel_op = string[:ind_of_rel_op]
     string_right_of_rel_op = string[ind_after_rel_op:]
-
     return is_constant(string_left_of_rel_op, string_right_of_rel_op)
 
 
@@ -154,8 +151,6 @@ def find_rel_op_ind(string):
 
 
 def find_ind_after_rel_op(string, ind_of_rel_op):
-    # TODO ? check validity, e.g. ind in range
-    # TODO change this to CASE
     ind_after_rel_op = ind_of_rel_op + 1
     if string[ind_of_rel_op] == '<':
         if string[ind_after_rel_op] == '=':
@@ -172,15 +167,6 @@ def check_if_const_is_str(string):
     return (string.startswith("'") and string.endswith("'")) or (string.startswith("\"") and string.endswith("\""))
 
 
-def check_if_const_type_valid(col_to_compare, const):
-    if col_to_compare == NAME_COL_NAME or col_to_compare == CUSTOMER_NAME_COL_NAME or col_to_compare == PRODUCT_COL_NAME :
-        return check_if_const_is_str(const)
-    elif col_to_compare == AGE_COL_NAME or col_to_compare == PRICE_COL_NAME:
-        return check_if_str_is_int(const)
-    else:
-        return False
-
-
 def check_if_str_is_int(string):
     try:
         int(string)
@@ -192,7 +178,6 @@ def check_if_str_is_int(string):
 def is_constant(string1, string2):
     stripped_string1 = string1.strip()
     stripped_string2 = string2.strip()
-    # TODO add the actual checks
     if check_if_str_is_int(stripped_string1) and check_if_str_is_int(stripped_string2):
         return True
     if check_valid_column_from_table(stripped_string1, Tables.ALL):
@@ -205,13 +190,22 @@ def is_constant(string1, string2):
             return True
 
 
+def check_if_const_type_valid(col_to_compare, const):
+    if col_to_compare == NAME_COL_NAME or \
+            col_to_compare == CUSTOMER_NAME_COL_NAME or col_to_compare == PRODUCT_COL_NAME:
+        return check_if_const_is_str(const)
+    elif col_to_compare == AGE_COL_NAME or col_to_compare == PRICE_COL_NAME:
+        return check_if_str_is_int(const)
+    else:
+        return False
+
+
 def cond_has_outer_parenthesis(string):
     stripped_string = string.strip()
     return stripped_string[0] == '(' and stripped_string[-1] == ')'
 
 
 def find_operator_ind(string, location_to_look_from):
-
     and_ind = string.find("AND", location_to_look_from)
     or_ind = string.find("OR", location_to_look_from)
     if and_ind < 0 and or_ind < 0:  # no AND or OR operators in string from given index
@@ -221,17 +215,13 @@ def find_operator_ind(string, location_to_look_from):
         if and_ind < or_ind:
             if and_ind >= 0:
                 first_operator_ind = and_ind
-                ind_after_operator = and_ind + 3
             else:
                 first_operator_ind = or_ind
-                ind_after_operator = or_ind + 2
         else:
             if or_ind >= 0:
                 first_operator_ind = or_ind
-                ind_after_operator = or_ind + 2
             else:
                 first_operator_ind = and_ind
-                ind_after_operator = and_ind + 3
         return first_operator_ind
 
 
@@ -258,53 +248,40 @@ def check_dist_in_location(location_of_select, location_of_distinct, location_af
 
 def check_distinct(string, location_of_select, location_of_distinct, location_after_from):
     str_between_select_and_distinct = string[location_after_SELECT:location_of_DISTINCT]
-    print("STR between select and distinct:--", str_between_select_and_distinct,"--")
     location_exists = location_of_DISTINCT != -1
-    print("location exists:", location_exists)
     dist_in_location = check_dist_in_location(location_of_select, location_of_distinct, location_after_from)
-    print("dist in location:", dist_in_location)
     only_spaces_between_select_and_distinct = str_contain_only_spaces(str_between_select_and_distinct)
-    print("only spaces between select and distinct:", only_spaces_between_select_and_distinct)
     return location_exists and dist_in_location and only_spaces_between_select_and_distinct
-# query = input("Enter a query: ")
-# print(query)
+
 
 # CONDITION CHECKS:
-#query = "\"SELECT Customers.Name FROM Customers WHERE  Customers.Age>5 OR 'Mike'<=Customers.Name AND Customers.Name=\"x\""  # VALID
-# query = "SELECT something  FROM somewhere  WHERE  y>>x OR x<y "  # INVALID
-# query = "SELECT something  FROM somewhere  WHERE  y=x  OR (x<>y )  "  # VALID
-# query = "SELECT something  FROM somewhere  WHERE  y<=y  OR ( (x<x ) ) "  # VALID
-# query = "SELECT something  FROM somewhere  WHERE  (y>x )  OR ( (x=y ) ) "  # VALID
-# query = "SELECT something  FROM somewhere  WHERE  (y<=x   OR ( (x>y ) ) "  # INVALID
-# query = "SELECT something  FROM somewhere  WHERE  ( (y>x)   OR ( (x<y ) ) )  "  # VALID
-query = "SELECT DISTINCT Customers.Name  FROM Customers  WHERE  ( (Customers.Age>5)   OR ( ('Mike'<=Customers.Name) ));"  # INVALID
-# query = "SELECT something  FROM somewhere  WHERE  ( (x>>y AND y==x) OR ((y><x AND z>y )) ) "  # VALID
-# query = "SELECT something  FROM somewhere  WHERE  ( (x>y AND y<=x) OR ((y>=x AND z>y )) ) "  # VALID
-# query = "SELECT something  FROM somewhere  WHERE  ( (x=y AND y<x) OR ((y>x AND z<=x )) "  # INVALID
-# query = "SELECT something  FROM somewhere  WHERE  y=y OR ((y>x AND z<x )) ) "  # INVALID
-# query = "SELECT something  FROM somewhere  WHERE  y=x OR (y=y AND z<x )) "  # INVALID
-# query = "SELECT something  FROM somewhere  WHERE  ( ((y=x)) OR x=y )"  # VALID
-# query = "SELECT something  FROM somewhere  WHERE  (x=y) AND ((y<=x)) OR (z<>y)"  # VALID
-# query = "SELECT something  FROM somewhere  WHERE ((((Customers.Name=Orders.CustomerName) and ((Orders.Price > 59)) or (Customers.Age=25))))"
+# query = "\"SELECT Customers.Name FROM Customers WHERE  Customers.Age>5 OR 'Mike'<=Customers.Name AND Customers.Name=\"x\""  # VALID
+# query = "SELECT DISTINCT Customers.Name  FROM Customers  WHERE  ( (Customers.Age>5)   OR ( ('Mike'<=Customers.Name) ));" # VALID
+# query = "SELECT Customers.Name FROM Customers WHERE Customers.Age=25;"  # VALID
+# query = "SELECT Customers.Name FROM Customers WHERE Customers.Name='Mike';"
+# query = "SELECT  Customers.Name FROM  Customers WHERE DISTINCT Customer.Age=25;"
+query = "SELECT Customers.Name,Orders.Price FROM Customers,Orders WHERE Customers.Name=Orders.CustomerName;"
+# query = "SELECT Customers.CustomerName,Orders.Price FROM Customers,Orders WHERE Customer.Name=Orders.CustomerName AND Orders.Price>1000;"
+# query = "SELECT Customers.Name,Orders.Price FROM Customers,Orders WHERE (Customer.Name=Orders.CustomerName) AND Orders.Price>1000;"
+# query = "SELECT Customers.Name,Orders.Price FROM Customers,Orders WHERE (Customer.Name=Orders.CustomerName) OR (Orders.Price>59);"
 
+# query = input("Enter a query: ")
 print(query)
 
+query = query.strip()
 if query.endswith(";"):
     query = query[:-1]
 
 location_of_SELECT = query.find("SELECT")
 location_after_SELECT = location_of_SELECT + 6
 location_of_DISTINCT = query.find("DISTINCT")
-
 location_of_FROM = query.find("FROM")
 location_after_FROM = location_of_FROM + 4
 location_of_WHERE = query.find("WHERE")
 location_after_WHERE = location_of_WHERE + 5
 
-
 if check_distinct(query, location_of_SELECT, location_of_DISTINCT, location_of_FROM):
     location_after_SELECT = location_of_DISTINCT + 8
-    print(location_after_SELECT)
 
 string_after_select = query[location_after_SELECT:location_of_FROM]
 string_after_from = query[location_after_FROM:location_of_WHERE]
@@ -313,7 +290,8 @@ string_after_where = query[location_after_WHERE:]
 if check_tables(string_after_from):
     table_name = get_table_name(string_after_from)
     if check_columns(string_after_select, table_name):
-        if check_cond(string_after_where):
+        if check_cond(
+                string_after_where):  # TODO decide if we need to check if the conditions apply to the specific table
             print("Valid")
         else:
             print("Invalid")
@@ -324,47 +302,3 @@ if check_tables(string_after_from):
 else:
     print("Invalid")
     print("Parsing <table_list> failed")
-
-"""
-if check_columns(string_after_select):
-    if check_from(string_after_from):
-        if check_cond(string_after_where):
-            print("Valid query :D")
-        else:
-            print("Parsing <condition> failed")
-    else:
-        print("Parsing <table_list> failed")
-else:
-    print("Parsing <attribute_list> failed")
-    # TODO do we need to insert something into <attribute_list> or print as is?
-"""
-
-# SELECT Customers.Name,Orders.Price FROM Customers,Orders WHERE Customer.Name=Orders.CustomerName;
-
-# " Customers.Name,Orders.Price, Orders.Price2 "
-"""
-example_string = "SELECT SELECT A B FROM customers WHERE A.B = \"2\""
-
-print(example_string)
-
-select_count = example_string.count("SELECT")
-
-if select_count == 1:
-    print("SELECT appears once")
-else:
-    if select_count == 0:
-        print("SELECT does not appear")
-    else:
-        print("SELECT appears more than once")
-"""
-
-""" 
-EXAMPLES TO TRY
-    SELECT Customers.Name FROM Customers WHERE Customer.Age=25;
-    SELECT Customers.Name FROM Customers WHERE Customer.Name=’Mike’;
-    SELECT DISTINCT Customers.Name FROM Customers WHERE Customer.Age=25;
-    SELECT Customers.Name,Orders.Price FROM Customers,Orders WHERE Customer.Name=Orders.CustomerName;
-    SELECT Customers.CustomerName,Orders.Price FROM Customers,Orders WHERE Customer.Name=Orders.CustomerName AND Orders.Price>1000;
-    SELECT Customers.Name,Orders.Price FROM Customers,Orders WHERE (Customer.Name=Orders.CustomerName) AND Orders.Price>1000;
-    SELECT Customers.Name,Orders.Price FROM Customers,Orders WHERE (Customer.Name=Orders.CustomerName) OR (Orders.Price>59);
-"""
