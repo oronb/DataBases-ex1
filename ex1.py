@@ -178,24 +178,48 @@ def check_if_str_is_int(string):
 def is_constant(string1, string2):
     stripped_string1 = string1.strip()
     stripped_string2 = string2.strip()
+    string1_is_col = check_valid_column_from_table(stripped_string1, Tables.ALL)
+    string2_is_col = check_valid_column_from_table(stripped_string2, Tables.ALL)
     if check_if_str_is_int(stripped_string1) and check_if_str_is_int(stripped_string2):
         return True
-    if check_valid_column_from_table(stripped_string1, Tables.ALL):
+    if string1_is_col and string2_is_col:
+        col1 = get_col_from_attribute(stripped_string1)
+        col2 = get_col_from_attribute(stripped_string2)
+        if check_same_attribute_type(col1, col2):
+            return True
+    if string1_is_col:
         col = get_col_from_attribute(stripped_string1)
         if check_if_const_type_valid(col, stripped_string2):
             return True
-    if check_valid_column_from_table(stripped_string2, Tables.ALL):
+    if string2_is_col:
         col = get_col_from_attribute(stripped_string2)
         if check_if_const_type_valid(col, stripped_string1):
             return True
 
 
 def check_if_const_type_valid(col_to_compare, const):
-    if col_to_compare == NAME_COL_NAME or \
-            col_to_compare == CUSTOMER_NAME_COL_NAME or col_to_compare == PRODUCT_COL_NAME:
+    if check_if_attribute_is_string_type(col_to_compare):
         return check_if_const_is_str(const)
-    elif col_to_compare == AGE_COL_NAME or col_to_compare == PRICE_COL_NAME:
+    elif check_if_attribute_is_int_type(col_to_compare):
         return check_if_str_is_int(const)
+    else:
+        return False
+
+
+def check_if_attribute_is_string_type(col):
+    return col == NAME_COL_NAME or \
+            col == CUSTOMER_NAME_COL_NAME or col == PRODUCT_COL_NAME
+
+
+def check_if_attribute_is_int_type(col):
+    col == AGE_COL_NAME or col == PRICE_COL_NAME
+
+
+def check_same_attribute_type(col1, col2):
+    if check_if_attribute_is_string_type(col1) and check_if_attribute_is_string_type(col2):
+        return True
+    elif check_if_attribute_is_int_type(col1) and check_if_attribute_is_int_type(col2):
+        return True
     else:
         return False
 
